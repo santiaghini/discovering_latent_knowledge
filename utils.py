@@ -26,6 +26,8 @@ print(device.type)
 ############# Model loading and result saving #############
 
 # Map each model name to its full Huggingface name; this is just for convenience for common models. You can run whatever model you'd like.
+# TODO: Test with two or three, unifiedQA (best model from zero-shot)
+# TODO: Three datasets
 model_mapping = {
     "gpt-j": "EleutherAI/gpt-j-6B",
     "T0pp": "bigscience/T0pp",
@@ -456,6 +458,7 @@ class MLPProbe(nn.Module):
 class CCS(object):
     def __init__(self, x0, x1, x2, x3, nepochs=1000, ntries=10, lr=1e-3, batch_size=-1, 
                  verbose=False, device="cuda", linear=True, weight_decay=0.01, var_normalize=False):
+
         # data
         self.var_normalize = var_normalize
         self.x0 = self.normalize(x0)
@@ -515,7 +518,10 @@ class CCS(object):
         Returns the CCS loss for two probabilities each of shape (n,1) or (n,)
         """
         informative_loss = (torch.min(p0, p1)**2).mean(0)
-        consistent_loss = ((p0 - (1-p1))**2).mean(0)
+        # (1 - max(p0..p3))**2
+        consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
+        # TODO: play with weighting if it doesnt. Try a grid
+        # downweighting consistency loss, not too much, or upweighting
         return informative_loss + consistent_loss
 
 
@@ -544,6 +550,7 @@ class CCS(object):
         x0, x1 = x0[permutation], x1[permutation]
         
         # set up optimizer
+        # TODO: play with lr and weight_decay
         optimizer = torch.optim.AdamW(self.probe.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         
         batch_size = len(x0) if self.batch_size == -1 else self.batch_size
