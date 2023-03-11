@@ -5,7 +5,7 @@ def main(args, generation_args):
     # load hidden states and labels
     c0_hs, c1_hs, c2_hs, c3_hs, y = load_all_generations(generation_args)
 
-    # Make sure the shape is correct
+    # Make sure shape is correct
     assert c0_hs.shape == c1_hs.shape and c0_hs.shape == c2_hs.shape and c0_hs.shape == c3_hs.shape
     c0_hs, c1_hs, c2_hs, c3_hs = c0_hs[..., -1], c1_hs[..., -1], c2_hs[..., -1], c3_hs[..., -1]  # take the last layer
     if c0_hs.shape[1] == 1:  # T5 may have an extra dimension; if so, get rid of it
