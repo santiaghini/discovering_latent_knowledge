@@ -6,6 +6,14 @@ from torch.utils.data import Dataset, DataLoader
 from promptsource.templates import DatasetTemplates
 from datasets import load_dataset
 
+# Test SWAG
+datasets = {
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer"},
+    "swag": {"subset_name": "regular", "prompt_name": "Generate the ending"},
+    "hellaswag": {"subset_name": "", "prompt_name": "how_ends"},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id"}
+}
+
 ############# Data #############
 class ContrastDataset(Dataset):
     """
@@ -14,11 +22,12 @@ class ContrastDataset(Dataset):
     
     Truncates examples larger than max_len, which can mess up contrast pairs, so make sure to only give it examples that won't be truncated.
     """
-    def __init__(self, raw_dataset, tokenizer, all_prompts, prompt_idx, 
+    def __init__(self, raw_dataset, tokenizer, all_prompts, prompt_idx, prompt_name,
                  model_type="encoder_decoder", use_decoder=False, device="cuda"):
 
         # data and tokenizer
         self.raw_dataset = raw_dataset
+        self.prompt_name = prompt_name
         self.tokenizer = tokenizer
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -32,7 +41,8 @@ class ContrastDataset(Dataset):
 
         # prompt
         prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
-        self.prompt = all_prompts[prompt_name_list[prompt_idx]] # TODO: can experiment with changing the prompts used in the dataset
+        # TODO: can experiment with changing the prompts used in the dataset
+        self.prompt = all_prompts[prompt_name] 
 
     def __len__(self):
         return len(self.raw_dataset)
@@ -159,18 +169,20 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
     Takes a random subset of (at most) num_examples samples from the dataset that are not truncated by the tokenizer.
     """
     # load the raw dataset
-    if dataset_name == 'race':
-        raw_dataset = load_dataset(dataset_name, name='high')[split]    
+    subset_name = datasets[dataset_name]["subset_name"]
+    if subset_name:
+        raw_dataset = load_dataset(dataset_name, name=subset_name)[split]    
     else:
         raw_dataset = load_dataset(dataset_name)[split]
 
     # load all the prompts for that dataset
-    all_prompts = DatasetTemplates(dataset_name)
+    all_prompts = DatasetTemplates(dataset_name, subset_name)
+
+    prompt_name = datasets[dataset_name]["prompt_name"]
 
     # create the ConstrastDataset
-    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, prompt_idx, 
-                                       model_type=model_type, use_decoder=use_decoder, 
-                                       device=device)
+    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, prompt_idx, prompt_name,
+                                       model_type=model_type, use_decoder=use_decoder, device=device)
 
     # get a random permutation of the indices; we'll take the first num_examples of these that do not get truncated
     random_idxs = np.random.permutation(len(contrast_dataset))

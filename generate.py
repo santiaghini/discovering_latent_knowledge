@@ -1,4 +1,6 @@
-from utils import get_parser, load_model, get_dataloader, get_all_hidden_states, save_generations
+from data import get_dataloader
+from hs import get_all_hidden_states
+from utils import get_parser, load_model, save_generations
 
 def main(args):
     # Set up the model and data
@@ -25,5 +27,5 @@ def main(args):
 
 if __name__ == "__main__":
     parser = get_parser()
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     main(args)
