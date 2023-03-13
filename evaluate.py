@@ -23,6 +23,8 @@ def main(args, generation_args):
 
     # Make sure logistic regression accuracy is reasonable; otherwise our method won't have much of a chance of working
     # you can also concatenate, but this works fine and is more comparable to CCS inputs
+
+    # TODO: concatenation
     x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
     x_test = c0_hs_test - c1_hs_test - c2_hs_test - c3_hs_test
     lr = LogisticRegression(class_weight="balanced")
