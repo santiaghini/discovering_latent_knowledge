@@ -9,9 +9,10 @@ from datasets import load_dataset
 # Test SWAG
 datasets = {
     "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer"},
-    "swag": {"subset_name": "regular", "prompt_name": "Generate the ending", "label_key": "label"},
-    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label": "label_key"},
-    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label"}
+    "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label"},
+    "hellaswag": {"subset_name": "", "prompt_name": "Generate the ending", "label": "label_key"},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label"},
+    "imdb": {"subset_name": "", "prompt_name": "Movie Expressed Sentiment 2", "label_key": "label"}
 }
 
 ############# Data #############
@@ -27,6 +28,7 @@ class ContrastDataset(Dataset):
 
         # data and tokenizer
         self.raw_dataset = raw_dataset
+        self.all_prompts = all_prompts
         self.dataset_name = dataset_name
         self.prompt_idx = prompt_idx
         self.prompt_name = prompt_name
@@ -44,7 +46,7 @@ class ContrastDataset(Dataset):
         # prompt
         # prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
         # TODO: can experiment with changing the prompts used in the dataset
-        self.prompt = all_prompts[prompt_name] 
+        self.prompt = all_prompts[prompt_name]
 
     def __len__(self):
         return len(self.raw_dataset)

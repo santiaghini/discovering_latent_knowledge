@@ -102,7 +102,7 @@ class CCS(object):
             p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
         # TODO: check what confidence we want here
         # avg_confidence = 0.5*(p0 + (1-p1))
-        avg_confidence = ((p0 + p1 + p2 + p3) - 1) / 4
+        avg_confidence = (p0 + (1 - p1 - p2 - p3)) / 4
         predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
         acc = (predictions == y_test).mean()
         acc = max(acc, 1 - acc)
