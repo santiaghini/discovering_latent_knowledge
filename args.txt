@@ -1,0 +1,3 @@
+--prompt_idx 3 --device cpu --model_name distilbert --num_examples 50 --batch_size 40 --dataset_name cosmos_qa --ccs_device cpu
+--prompt_idx 3 --device cpu --model_name distilbert --num_examples 50 --batch_size 40 --dataset_name swag --split train --ccs_device cpu
+--prompt_idx 3 --device cpu --model_name distilbert --num_examples 50 --batch_size 40 --dataset_name swag --race train --ccs_device cpu
