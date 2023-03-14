@@ -8,7 +8,7 @@ from datasets import load_dataset
 
 # Test SWAG
 datasets = {
-    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer"},
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer (generate span)", "label_key": "answer"},
     "swag": {"subset_name": "regular", "prompt_name": "Generate the ending", "label_key": "label"},
     "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label": "label_key"},
     "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label"}
