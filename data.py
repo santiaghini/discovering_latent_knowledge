@@ -8,10 +8,10 @@ from datasets import load_dataset
 
 # Test SWAG
 datasets = {
-    "race": {"subset_name": "all", "prompt_name": "Select the best answer"},
-    "swag": {"subset_name": "regular", "prompt_name": "Generate the ending"},
-    "hellaswag": {"subset_name": "", "prompt_name": "how_ends"},
-    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id"}
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer"},
+    "swag": {"subset_name": "regular", "prompt_name": "Generate the ending", "label_key": "label"},
+    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label": "label_key"},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label"}
 }
 
 ############# Data #############
@@ -22,11 +22,13 @@ class ContrastDataset(Dataset):
     
     Truncates examples larger than max_len, which can mess up contrast pairs, so make sure to only give it examples that won't be truncated.
     """
-    def __init__(self, raw_dataset, tokenizer, all_prompts, prompt_idx, prompt_name,
+    def __init__(self, raw_dataset, tokenizer, all_prompts, dataset_name, prompt_idx, prompt_name,
                  model_type="encoder_decoder", use_decoder=False, device="cuda"):
 
         # data and tokenizer
         self.raw_dataset = raw_dataset
+        self.dataset_name = dataset_name
+        self.prompt_idx = prompt_idx
         self.prompt_name = prompt_name
         self.tokenizer = tokenizer
         if self.tokenizer.pad_token is None:
@@ -40,7 +42,7 @@ class ContrastDataset(Dataset):
             assert self.model_type != "encoder"
 
         # prompt
-        prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
+        # prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
         # TODO: can experiment with changing the prompts used in the dataset
         self.prompt = all_prompts[prompt_name] 
 
@@ -61,6 +63,7 @@ class ContrastDataset(Dataset):
         # get question and answer from prompt
         question, answer = nl_prompt
         
+        # TODO: verify this operation is correct
         # tokenize the question and answer (depending upon the model type and whether self.use_decoder is True)
         if self.model_type == "encoder_decoder":
             input_ids = self.get_encoder_decoder_input_ids(question, answer)
@@ -81,6 +84,8 @@ class ContrastDataset(Dataset):
         """
         Format the input ids for encoder-only models; standard formatting.
         """
+        # TODO: check if what's question / answer for amazon dataset: is answer the full answer or just the idx too?
+        # for race dataset answer = idx of answer (e.g. "0")
         combined_input = question + " " + answer 
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
@@ -124,25 +129,23 @@ class ContrastDataset(Dataset):
         # get the original example
         data = self.raw_dataset[int(index)]
         # TODO: change for a different dataset (validate)
-        text, true_answer = data["question"], data["label"]
-        # text, true_answer = data["text"], data["label"]
+        label_key = datasets[self.dataset_name]["label_key"]
+        true_answer = data[label_key]
 
         # get the possible labels
-        # (for simplicity assume the binary case for contrast pairs)
-        label_list = [x for x in [data['answer0'], data['answer1'], data['answer2'], data['answer3']] if x != '']
+        # label_list = [x for x in [data['answer0'], data['answer1'], data['answer2'], data['answer3']] if x != '']
         # label_list = self.prompt.get_answer_choices_list(data)
-        assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
-        # assert len(label_list) == 2, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
+        # assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
 
         # reconvert to dataset format but with fake/candidate labels to create the contrast pair
         c0_example = data.copy()
-        c0_example['label'] = 0
+        c0_example[label_key] = 0
         c1_example = data.copy()
-        c1_example['label'] = 1
+        c1_example[label_key] = 1
         c2_example = data.copy()
-        c2_example['label'] = 2
+        c2_example[label_key] = 2
         c3_example = data.copy()
-        c3_example['label'] = 3
+        c3_example[label_key] = 3
 
         # construct contrast pairs by answering the prompt with the two different possible labels
         # (for example, label 0 might be mapped to "no" and label 1 might be mapped to "yes")
@@ -181,7 +184,7 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
     prompt_name = datasets[dataset_name]["prompt_name"]
 
     # create the ConstrastDataset
-    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, prompt_idx, prompt_name,
+    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, dataset_name, prompt_idx, prompt_name,
                                        model_type=model_type, use_decoder=use_decoder, device=device)
 
     # get a random permutation of the indices; we'll take the first num_examples of these that do not get truncated
