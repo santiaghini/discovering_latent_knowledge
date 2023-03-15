@@ -35,7 +35,7 @@ def main(args, generation_args):
     # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
     x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
     x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
-    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial")
+    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=1000)
     lr.fit(x_train, y_train)
     print("Logistic regression accuracy: {}".format(lr.score(x_test, y_test)))
 
