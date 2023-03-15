@@ -105,7 +105,7 @@ class CCS(object):
         # avg_confidence = 0.25*(p0 + p1 + (1 - p2 - p3))
         # avg_confidence = 0.5*(p0 + (1 - p1 - p2 - p3))
         # predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
-        p0f, p1f, p2f, p3f = p0.numpy()[:, 0], p1.numpy()[:, 0], p2.numpy()[:, 0], p3.numpy()[:, 0]
+        p0f, p1f, p2f, p3f = [pi.detach().cpu().numpy()[:, 0] for pi in [p0, p1, p2, p3]]
 
         predictions = np.zeros(p0.shape[0], dtype=int)
         predictions[np.logical_and.reduce((p0f > p1f, p0f > p2f, p0f > p3f))] = 0
