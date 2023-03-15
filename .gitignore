@@ -1,3 +1,4 @@
 .DS_Store
 generated_hidden_states/
 __pycache__
+logs/
