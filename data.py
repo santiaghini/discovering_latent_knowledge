@@ -8,10 +8,10 @@ from datasets import load_dataset
 
 # Test SWAG
 datasets = {
-    "race": {"subset_name": "all", "prompt_name": "Select the best answer (generate span)", "label_key": "answer"},
-    "swag": {"subset_name": "regular", "prompt_name": "Generate the ending", "label_key": "label"},
-    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label": "label_key"},
-    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label"}
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"]},
+    "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
+    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label", "labels_set": [0, 1, 2, 3]}
 }
 
 ############# Data #############
@@ -28,6 +28,7 @@ class ContrastDataset(Dataset):
         # data and tokenizer
         self.raw_dataset = raw_dataset
         self.dataset_name = dataset_name
+        self.all_prompts = all_prompts
         self.prompt_idx = prompt_idx
         self.prompt_name = prompt_name
         self.tokenizer = tokenizer
@@ -44,7 +45,13 @@ class ContrastDataset(Dataset):
         # prompt
         # prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
         # TODO: can experiment with changing the prompts used in the dataset
-        self.prompt = all_prompts[prompt_name] 
+        self.prompt = all_prompts[prompt_name]
+
+        # self.labels_set = set()
+        # for ex in self.raw_dataset:
+        #     self.labels_set.add(ex["label"])
+        #     if len(self.labels_set) == 4:
+        #         break
 
     def __len__(self):
         return len(self.raw_dataset)
@@ -137,15 +144,17 @@ class ContrastDataset(Dataset):
         # label_list = self.prompt.get_answer_choices_list(data)
         # assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
 
+        labels_set = datasets[self.dataset_name]["labels_set"]
+
         # reconvert to dataset format but with fake/candidate labels to create the contrast pair
         c0_example = data.copy()
-        c0_example[label_key] = 0
+        c0_example[label_key] = labels_set[0]
         c1_example = data.copy()
-        c1_example[label_key] = 1
+        c1_example[label_key] = labels_set[1]
         c2_example = data.copy()
-        c2_example[label_key] = 2
+        c2_example[label_key] = labels_set[2]
         c3_example = data.copy()
-        c3_example[label_key] = 3
+        c3_example[label_key] = labels_set[3]
 
         # construct contrast pairs by answering the prompt with the two different possible labels
         # (for example, label 0 might be mapped to "no" and label 1 might be mapped to "yes")
