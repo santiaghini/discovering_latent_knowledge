@@ -5,3 +5,4 @@
 
 For instance:
 --device cuda --model_name unifiedqa --num_examples 500 --batch_size 40 --dataset_name swag --split train --ccs_device cuda
+--device cuda --model_name distilbert --num_examples 100 --batch_size 40 --dataset_name race --split train --ccs_device cuda > logs/logs.txt
