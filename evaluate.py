@@ -1,10 +1,14 @@
 from ccs import CCS
+from data import datasets
 from utils import get_parser, load_all_generations
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 def main(args, generation_args):
+    # Add key to args
+    generation_args.prompt_name = datasets[generation_args.dataset_name]["prompt_name"].replace(" ", "_")
+
     # load hidden states and labels
     c0_hs, c1_hs, c2_hs, c3_hs, y = load_all_generations(generation_args)
 
