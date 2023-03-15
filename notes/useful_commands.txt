@@ -6,3 +6,13 @@ find /path/to/search -type f -size +5G -exec ls -lh {} \;
 
 Run in background
 nohup python my_script.py > output.txt &
+
+Delete cache from huggingface
+cd ~/.cache/
+cd huggingface
+cd hub
+find . -type f -size +10G -exec ls -lh {} \;
+rm -rf <file>
+
+Usage and memory of filesystems
+df -h
