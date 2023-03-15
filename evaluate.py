@@ -35,7 +35,7 @@ def main(args, generation_args):
     # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
     x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
     x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
-    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=1000)
+    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter)
     lr.fit(x_train, y_train)
     print("Logistic regression accuracy: {}".format(lr.score(x_test, y_test)))
 
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     parser = get_parser()
     generation_args, _ = parser.parse_known_args()  # we'll use this to load the correct hidden states + labels
     # We'll also add some additional args for evaluation
+    parser.add_argument("--lr_max_iter", type=int, default=1000)
     parser.add_argument("--nepochs", type=int, default=1000)
     parser.add_argument("--ntries", type=int, default=10)
     parser.add_argument("--lr", type=float, default=1e-3)
