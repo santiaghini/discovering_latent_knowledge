@@ -23,13 +23,17 @@ def main(args, generation_args):
 
     # Very simple train/test split (using the fact that the data is already shuffled)
     # TODO OH: data issues, make sure distilbert does well in general
-    # TODO: maybe do 80/20
     # make sure your model
-    c0_hs_train, c0_hs_test = c0_hs[:len(c0_hs) // 2], c0_hs[:len(c0_hs) // 2]
-    c1_hs_train, c1_hs_test = c1_hs[:len(c1_hs) // 2], c1_hs[len(c1_hs) // 2:]
-    c2_hs_train, c2_hs_test = c2_hs[:len(c2_hs) // 2], c2_hs[len(c2_hs) // 2:]
-    c3_hs_train, c3_hs_test = c3_hs[:len(c3_hs) // 2], c3_hs[len(c3_hs) // 2:]
-    y_train, y_test = y[:len(y) // 2], y[len(y) // 2:]
+    # c0_hs_train, c0_hs_test = c0_hs[:len(c0_hs) // 2], c0_hs[:len(c0_hs) // 2]
+    # c1_hs_train, c1_hs_test = c1_hs[:len(c1_hs) // 2], c1_hs[len(c1_hs) // 2:]
+    # c2_hs_train, c2_hs_test = c2_hs[:len(c2_hs) // 2], c2_hs[len(c2_hs) // 2:]
+    # c3_hs_train, c3_hs_test = c3_hs[:len(c3_hs) // 2], c3_hs[len(c3_hs) // 2:]
+    # TODO: maybe do 80/20
+    c0_hs_train, c0_hs_test = c0_hs[:len(c0_hs) // 4*3], c0_hs[len(c0_hs) // 4*3:]
+    c1_hs_train, c1_hs_test = c1_hs[:len(c1_hs) // 4*3], c1_hs[len(c1_hs) // 4*3:]
+    c2_hs_train, c2_hs_test = c2_hs[:len(c2_hs) // 4*3], c2_hs[len(c2_hs) // 4*3:]
+    c3_hs_train, c3_hs_test = c3_hs[:len(c3_hs) // 4*3], c3_hs[len(c3_hs) // 4*3:]
+    y_train, y_test = y[:len(y) // 4*3], y[len(y) // 4*3:]
 
     # Make sure logistic regression accuracy is reasonable; otherwise our method won't have much of a chance of working
     # you can also concatenate, but this works fine and is more comparable to CCS inputs
