@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--prompt_idx", "3", "--num_examples", "1", "--device", "cpu", "--model_name", "distilbert",  "--num_examples", "50", "--batch_size", "40", "--dataset_name", "race", "--ccs_device", "cpu"]
+            "args": ["--device", "cpu", "--model_name", "distilbert", "--num_examples", "10", "--batch_size", "40", "--dataset_name", "race", "--ccs_device", "cpu"]
         }
     ]
 }

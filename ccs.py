@@ -101,10 +101,18 @@ class CCS(object):
         with torch.no_grad():
             p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
         # TODO: check what confidence we want here
-        # avg_confidence = 0.5*(p0 + (1-p1))
+        # avg_confidence = 0.5*(p0 + (1-p1)) # original
         # avg_confidence = 0.25*(p0 + p1 + (1 - p2 - p3))
-        avg_confidence = 0.5*(p0 + (1 - p1 - p2 - p3))
-        predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
+        # avg_confidence = 0.5*(p0 + (1 - p1 - p2 - p3))
+        # predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
+        p0f, p1f, p2f, p3f = p0.numpy()[:, 1], p1.numpy()[:, 1], p2.numpy()[:, 1], p3.numpy()[:, 1]
+
+        predictions = np.zeros(p0.shape[0])
+        predictions[np.logical_and.reduce((p0f > p1f, p0f > p2f, p0f > p3f))] = 0
+        predictions[np.logical_and.reduce((p1f > p0f, p1f > p2f, p1f > p3f))] = 1
+        predictions[np.logical_and.reduce((p2f > p0f, p2f > p1f, p2f > p3f))] = 2
+        predictions[np.logical_and.reduce((p3f > p0f, p3f > p1f, p3f > p2f))] = 3
+
         acc = (predictions == y_test).mean()
         acc = max(acc, 1 - acc)
 
