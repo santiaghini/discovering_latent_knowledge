@@ -1,8 +1,11 @@
-from data import get_dataloader
+from data import get_dataloader, datasets
 from hs import get_all_hidden_states
 from utils import get_parser, load_model, save_generations
 
 def main(args):
+    # Add key to args
+    args.prompt_name = datasets[args.dataset_name]["prompt_name"]
+
     # Set up the model and data
     print("Loading model")
     model, tokenizer, model_type = load_model(args.model_name, args.cache_dir, args.parallelize, args.device)

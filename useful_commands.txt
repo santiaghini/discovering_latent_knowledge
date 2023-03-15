@@ -1,0 +1,5 @@
+Append stout to file
+python my_script.py >> output.txt
+
+Find large files
+find /path/to/search -type f -size +5G -exec ls -lh {} \;
