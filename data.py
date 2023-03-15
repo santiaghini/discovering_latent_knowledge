@@ -47,6 +47,13 @@ class ContrastDataset(Dataset):
         # TODO: can experiment with changing the prompts used in the dataset
         self.prompt = all_prompts[prompt_name]
 
+        self.labels_map = None
+        labels_set = datasets[self.dataset_name]["labels_set"]
+        if type(labels_set[0]) != int:
+            self.labels_map = {}
+            for i, label in enumerate(labels_set):
+                self.labels_map[label] = i
+
         # self.labels_set = set()
         # for ex in self.raw_dataset:
         #     self.labels_set.add(ex["label"])
@@ -135,9 +142,6 @@ class ContrastDataset(Dataset):
     def __getitem__(self, index):
         # get the original example
         data = self.raw_dataset[int(index)]
-        # TODO: change for a different dataset (validate)
-        label_key = datasets[self.dataset_name]["label_key"]
-        true_answer = data[label_key]
 
         # get the possible labels
         # label_list = [x for x in [data['answer0'], data['answer1'], data['answer2'], data['answer3']] if x != '']
@@ -145,6 +149,11 @@ class ContrastDataset(Dataset):
         # assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
 
         labels_set = datasets[self.dataset_name]["labels_set"]
+
+        label_key = datasets[self.dataset_name]["label_key"]
+        true_answer = data[label_key]
+        if self.labels_map:
+            true_answer = self.labels_map[true_answer]
 
         # reconvert to dataset format but with fake/candidate labels to create the contrast pair
         c0_example = data.copy()
