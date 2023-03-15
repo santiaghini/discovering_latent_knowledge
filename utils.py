@@ -25,7 +25,8 @@ model_mapping = {
     "roberta-mnli": "roberta-large-mnli",
     "distilbert": "distilbert-base-uncased",
     "distilbert-race": "gsgoncalves/distilbert-base-uncased-race",
-    "gpt2": "gpt2"
+    "gpt2": "gpt2",
+    "unifiedqa-sm": "allenai/unifiedqa-t5-small"
 }
 
 
