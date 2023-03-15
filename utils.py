@@ -24,6 +24,7 @@ model_mapping = {
     "deberta": "microsoft/deberta-xxlarge-v2",
     "roberta-mnli": "roberta-large-mnli",
     "distilbert": "distilbert-base-uncased",
+    "distilbert-race": "gsgoncalves/distilbert-base-uncased-race",
     "gpt-2": "gpt2"
 }
 
