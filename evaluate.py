@@ -10,6 +10,7 @@ def main(args, generation_args):
     generation_args.prompt_name = datasets[generation_args.dataset_name]["prompt_name"].replace(" ", "_")
 
     # load hidden states and labels
+    print("Loading generations...")
     c0_hs, c1_hs, c2_hs, c3_hs, y = load_all_generations(generation_args)
 
     # Make sure the shape is correct
@@ -40,6 +41,7 @@ def main(args, generation_args):
 
     # TODO OH: make consistent choices, e.g. "choice A"
 
+    print("Starting logistic regression...")
     # TODO: validate concatenation works better than subtraction
     x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
     x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
@@ -47,8 +49,8 @@ def main(args, generation_args):
     # x_test = c0_hs_test - c1_hs_train - c2_hs_test - c3_hs_test 
     lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter)
     lr.fit(x_train, y_train)
-    print("Logistic regression accuracy: {}".format(lr.score(x_train, y_train)))
-    print("Logistic regression accuracy: {}".format(lr.score(x_test, y_test)))
+    print("Logistic regression train accuracy: {}".format(lr.score(x_train, y_train)))
+    print("Logistic regression test accuracy: {}".format(lr.score(x_test, y_test)))
 
     # Set up CCS. Note that you can usually just use the default args by simply doing ccs = CCS(neg_hs, pos_hs, y)
     ccs = CCS(c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train, nepochs=args.nepochs, ntries=args.ntries, lr=args.lr, batch_size=args.ccs_batch_size, 
