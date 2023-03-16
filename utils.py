@@ -83,7 +83,10 @@ def load_model(model_name, cache_dir=None, parallelize=False, device="cuda"):
             model = AutoModelForMaskedLM.from_pretrained(full_model_name, cache_dir=cache_dir)
             model_type = "encoder"
         except:
-            model = AutoModelForCausalLM.from_pretrained(full_model_name, cache_dir=cache_dir)
+            if model_name == "gpt2-cosmos":
+                model = AutoModelForCausalLM.from_pretrained(full_model_name, cache_dir=cache_dir, from_flax=True)
+            else:
+                model = AutoModelForCausalLM.from_pretrained(full_model_name, cache_dir=cache_dir)
             model_type = "decoder"
     
         
