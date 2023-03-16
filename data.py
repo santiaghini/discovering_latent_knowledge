@@ -10,7 +10,7 @@ from datasets import load_dataset
 # TODO OH: choose the right dataset and model, making sure it performs well
 #   bert (encoder) is not great for this. maybe use gpt-2 instead, decoder only models
 datasets = {
-    "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answer", "labels_set": ["A", "B", "C", "D"]},
+    "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answerKey", "labels_set": ["A", "B", "C", "D"]},
     "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"]},
     "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
     "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
