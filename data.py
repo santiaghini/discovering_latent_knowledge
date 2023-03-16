@@ -103,7 +103,8 @@ class ContrastDataset(Dataset):
         """
         # TODO: check if what's question / answer for amazon dataset: is answer the full answer or just the idx too?
         # for race dataset answer = idx of answer (e.g. "0")
-        combined_input = question + " " + answer 
+        # combined_input = question + " " + answer
+        combined_input = question + '/n The correct answer for the question is option "' + answer + '".'
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
         return input_ids
@@ -171,6 +172,8 @@ class ContrastDataset(Dataset):
         c2_example[label_key] = labels_set[2]
         c3_example = data.copy()
         c3_example[label_key] = labels_set[3]
+
+        # TODO: Change prompt to append answer at the end after a question "choice 1/2"
 
         # construct contrast pairs by answering the prompt with the two different possible labels
         # (for example, label 0 might be mapped to "no" and label 1 might be mapped to "yes")

@@ -90,6 +90,8 @@ def load_model(model_name, cache_dir=None, parallelize=False, device="cuda"):
                 model = AutoModelForCausalLM.from_pretrained(full_model_name, cache_dir=cache_dir)
             model_type = "decoder"
     
+    print(f"Model type: {model_type}")
+    
         
     # specify model_max_length (the max token length) to be 512 to ensure that padding works 
     # (it's not set by default for e.g. DeBERTa, but it's necessary for padding to work properly)
