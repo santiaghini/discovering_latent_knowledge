@@ -10,11 +10,11 @@ from datasets import load_dataset
 # TODO OH: choose the right dataset and model, making sure it performs well
 #   bert (encoder) is not great for this. maybe use gpt-2 instead, decoder only models
 datasets = {
-    "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answerKey", "labels_set": ["A", "B", "C", "D"]},
-    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"]},
-    "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
-    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3]},
-    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label", "labels_set": [0, 1, 2, 3]}
+    "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answerKey", "labels_set": [], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3, "1": 0, "2": 1, "3": 2, "4": 3}},
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3}},
+    "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None},
+    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None}
 }
 
 ############# Data #############
@@ -50,12 +50,12 @@ class ContrastDataset(Dataset):
         # TODO: can experiment with changing the prompts used in the dataset
         self.prompt = all_prompts[prompt_name]
 
-        self.labels_map = None
-        labels_set = datasets[self.dataset_name]["labels_set"]
-        if type(labels_set[0]) != int:
-            self.labels_map = {}
-            for i, label in enumerate(labels_set):
-                self.labels_map[label] = i
+        # self.labels_map = None
+        # labels_set = datasets[self.dataset_name]["labels_set"]
+        # if type(labels_set.get(0)) != int:
+        #     self.labels_map = {}
+        #     for i, label in enumerate(labels_set):
+        #         self.labels_map[label] = i
 
         # self.labels_set = set()
         # for ex in self.raw_dataset:
@@ -151,12 +151,16 @@ class ContrastDataset(Dataset):
         # label_list = self.prompt.get_answer_choices_list(data)
         # assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
 
-        labels_set = datasets[self.dataset_name]["labels_set"]
-
+        # want true_answer to be the index as int, this will be
         label_key = datasets[self.dataset_name]["label_key"]
         true_answer = data[label_key]
-        if self.labels_map:
-            true_answer = self.labels_map[true_answer]
+        labels_map = datasets[self.dataset_name]["labels_map"]
+        if labels_map:
+            true_answer = labels_map[true_answer]
+
+        labels_set = datasets[self.dataset_name]["labels_set"]
+        if self.dataset_name == "ai2_arc":
+            labels_set = data["choices"]["label"]
 
         # reconvert to dataset format but with fake/candidate labels to create the contrast pair
         c0_example = data.copy()
