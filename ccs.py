@@ -84,11 +84,12 @@ class CCS(object):
         # TODO: verify loss functions:
         # the lower the more confident
         # TODO OH: Entropy of outputs, minimize entropy
-        informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
+        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
+        informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))) + torch.min(p0, torch.min(p1, torch.min(p2, p3))))**2).mean(0)
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
-        return informative_loss + consistent_loss
+        return informative_loss + 0.7*consistent_loss
 
 
     def get_acc(self, x0_test, x1_test, x2_test, x3_test, y_test):
@@ -106,6 +107,7 @@ class CCS(object):
         # avg_confidence = 0.25*(p0 + p1 + (1 - p2 - p3))
         # avg_confidence = 0.5*(p0 + (1 - p1 - p2 - p3))
         # predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
+        # 0.25(p0 + (1 - p0 - p2 - p3) + (1 - p0 - p1 - p3) + (1 - p0 - p1 - p2))
         p0f, p1f, p2f, p3f = [pi.detach().cpu().numpy()[:, 0] for pi in [p0, p1, p2, p3]]
 
         predictions = np.zeros(p0.shape[0], dtype=int)
