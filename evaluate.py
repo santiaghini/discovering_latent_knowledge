@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 
 def main(args, generation_args):
     # Add key to args
-    generation_args.prompt_name = datasets[generation_args.dataset_name]["prompt_name"].replace(" ", "_")
+    # generation_args.prompt_name = datasets[generation_args.dataset_name]["prompt_name"].replace(" ", "_")
 
     # load hidden states and labels
     print("Loading generations...")

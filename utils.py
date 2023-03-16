@@ -27,7 +27,11 @@ model_mapping = {
     "distilbert-race": "gsgoncalves/distilbert-base-uncased-race",
     "gpt2": "gpt2",
     "unifiedqa-t5-sm": "allenai/unifiedqa-t5-small",
-    "unifiedqa-v2-sm": "allenai/unifiedqa-v2-t5-small-1363200"
+    "unifiedqa-v2-sm": "allenai/unifiedqa-v2-t5-small-1363200",
+    "gpt2-cosmos": "flax-community/gpt2-Cosmos",
+    "roberta-race": "LIAMF-USP/roberta-large-finetuned-race",
+    "bert-swag": "aaraki/bert-base-uncased-finetuned-swag",
+    "t5-cosmos": "mamlong34/t5_small_cosmos_qa"
 }
 
 

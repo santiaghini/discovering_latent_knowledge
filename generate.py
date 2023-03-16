@@ -4,7 +4,7 @@ from utils import get_parser, load_model, save_generations
 
 def main(args):
     # Add key to args
-    args.prompt_name = datasets[args.dataset_name]["prompt_name"].replace(" ", "_")
+    # args.prompt_name = datasets[args.dataset_name]["prompt_name"].replace(" ", "_")
 
     # Set up the model and data
     print("Loading model")
