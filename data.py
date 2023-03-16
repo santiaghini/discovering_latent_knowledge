@@ -215,7 +215,7 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
     # get a random permutation of the indices; we'll take the first num_examples of these that do not get truncated
     random_idxs = np.random.permutation(len(contrast_dataset))
 
-    # remove examples that would be truncated (since this messes up contrast pairs)
+    # remove examples that would be truncated (since this messes up contrast pairs) AND that have at most 4 choices
     prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
     prompt = all_prompts[prompt_name_list[prompt_idx]]
     keep_idxs = []
@@ -223,6 +223,8 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
         question, answer = prompt.apply(raw_dataset[int(idx)])
         input_text = question + " " + answer
         if len(tokenizer.encode(input_text, truncation=False)) < tokenizer.model_max_length - 2:  # include small margin to be conservative
+            if dataset_name == "ai2_arc" and len(labels_set = raw_dataset[int(idx)]["choices"]["label"]) != 4:
+                continue
             keep_idxs.append(idx)
             if len(keep_idxs) >= num_examples:
                 break
