@@ -28,10 +28,11 @@ model_mapping = {
     "gpt2": "gpt2",
     "unifiedqa-t5-sm": "allenai/unifiedqa-t5-small",
     "unifiedqa-v2-sm": "allenai/unifiedqa-v2-t5-small-1363200",
-    "gpt2-cosmos": "flax-community/gpt2-Cosmos", # 60%
+    # "gpt2-cosmos": "flax-community/gpt2-Cosmos", # 60%
     "roberta-race": "LIAMF-USP/roberta-large-finetuned-race", # 85%
     "bert-swag": "aaraki/bert-base-uncased-finetuned-swag", # 80%
-    "t5-cosmos": "mamlong34/t5_small_cosmos_qa" # 60%
+    "t5-cosmos": "mamlong34/t5_small_cosmos_qa", # 60%
+    "roberta-xlm": "xlm-roberta-base"
 }
 
 
