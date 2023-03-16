@@ -104,7 +104,7 @@ class ContrastDataset(Dataset):
         # TODO: check if what's question / answer for amazon dataset: is answer the full answer or just the idx too?
         # for race dataset answer = idx of answer (e.g. "0")
         # combined_input = question + " " + answer
-        combined_input = question + '\n The correct answer for the question is option "' + answer
+        combined_input = question + '\n The correct answer for the question is option "' + answer + '"'
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
         return input_ids
