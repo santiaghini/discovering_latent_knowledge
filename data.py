@@ -223,7 +223,7 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
         question, answer = prompt.apply(raw_dataset[int(idx)])
         input_text = question + " " + answer
         if len(tokenizer.encode(input_text, truncation=False)) < tokenizer.model_max_length - 2:  # include small margin to be conservative
-            if dataset_name == "ai2_arc" and len(labels_set = raw_dataset[int(idx)]["choices"]["label"]) != 4:
+            if dataset_name == "ai2_arc" and len(raw_dataset[int(idx)]["choices"]["label"]) != 4:
                 continue
             keep_idxs.append(idx)
             if len(keep_idxs) >= num_examples:
