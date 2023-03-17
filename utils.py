@@ -26,6 +26,7 @@ model_mapping = {
     "distilbert": "distilbert-base-uncased",
     "distilbert-race": "gsgoncalves/distilbert-base-uncased-race",
     "gpt2": "gpt2",
+    "gpt2-l": "gpt2-large",
     "unifiedqa-t5-sm": "allenai/unifiedqa-t5-small",
     "unifiedqa-v2-sm": "allenai/unifiedqa-v2-t5-small-1363200",
     # "gpt2-cosmos": "flax-community/gpt2-Cosmos", # 60%
