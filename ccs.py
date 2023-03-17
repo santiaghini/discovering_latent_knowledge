@@ -108,8 +108,6 @@ class CCS(object):
         x2 = torch.tensor(self.normalize(x2_test), dtype=torch.float, requires_grad=False, device=self.device)
         x3 = torch.tensor(self.normalize(x3_test), dtype=torch.float, requires_grad=False, device=self.device)
 
-        print(f"self.best_probe at acc: {self.best_probe}")
-
         with torch.no_grad():
             p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
         
@@ -183,8 +181,5 @@ class CCS(object):
                 print(f"better loss achieved")
                 self.best_probe = copy.deepcopy(self.probe)
                 best_loss = loss
-
-        print(f"self.best_probe: {self.best_probe}")
-        print(f"self.probe: {self.probe}")
 
         return best_loss
