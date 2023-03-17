@@ -41,17 +41,18 @@ def main(args, generation_args):
 
     # TODO OH: make consistent choices, e.g. "choice A"
 
-    print("Starting logistic regression...")
-    # TODO: validate concatenation works better than subtraction
-    x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
-    x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
-    # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
-    # x_test = c0_hs_test - c1_hs_train - c2_hs_test - c3_hs_test
-    # TODO OH: add regularization with LR, less overfit
-    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter, penalty='l2', C=1.0)
-    lr.fit(x_train, y_train)
-    print("Logistic regression train accuracy: {}".format(lr.score(x_train, y_train)))
-    print("Logistic regression test accuracy: {}".format(lr.score(x_test, y_test)))
+    if not args.skip_lr:
+        print("Starting logistic regression...")
+        # TODO: validate concatenation works better than subtraction
+        x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
+        x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
+        # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
+        # x_test = c0_hs_test - c1_hs_train - c2_hs_test - c3_hs_test
+        # TODO OH: add regularization with LR, less overfit
+        lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter, penalty='l2', C=1.0)
+        lr.fit(x_train, y_train)
+        print("Logistic regression train accuracy: {}".format(lr.score(x_train, y_train)))
+        print("Logistic regression test accuracy: {}".format(lr.score(x_test, y_test)))
 
     # Set up CCS. Note that you can usually just use the default args by simply doing ccs = CCS(neg_hs, pos_hs, y)
     ccs = CCS(c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train, nepochs=args.nepochs, ntries=args.ntries, lr=args.lr, batch_size=args.ccs_batch_size, 
@@ -80,5 +81,6 @@ if __name__ == "__main__":
     parser.add_argument("--linear", action="store_true")
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--var_normalize", action="store_true")
+    parser.add_argument("--skip_lr", action="store_true")
     args, _ = parser.parse_known_args()
     main(args, generation_args)
