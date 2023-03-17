@@ -85,7 +85,8 @@ class CCS(object):
         # the lower the more confident
         # TODO OH: Entropy of outputs, minimize entropy
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
-        informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))) + torch.min(p0, torch.min(p1, torch.min(p2, p3))))**2).mean(0)
+        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))) + torch.min(p0, torch.min(p1, torch.min(p2, p3))))**2).mean(0)
+        informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
