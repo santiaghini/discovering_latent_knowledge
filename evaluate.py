@@ -41,14 +41,14 @@ def main(args, generation_args):
 
     # TODO OH: make consistent choices, e.g. "choice A"
 
-    print("Starting logistic regression...")
+    print("Starting logistic regression with L2...")
     # TODO: validate concatenation works better than subtraction
     x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
     x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
     # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
     # x_test = c0_hs_test - c1_hs_train - c2_hs_test - c3_hs_test
     # TODO OH: add regularization with LR, less overfit
-    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter)
+    lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter, penalty='l2', C=1.0)
     lr.fit(x_train, y_train)
     print("Logistic regression train accuracy: {}".format(lr.score(x_train, y_train)))
     print("Logistic regression test accuracy: {}".format(lr.score(x_test, y_test)))
