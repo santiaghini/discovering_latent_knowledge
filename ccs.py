@@ -92,7 +92,7 @@ class CCS(object):
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
-        return informative_loss + 0.5*consistent_loss
+        return informative_loss + consistent_loss
 
 
     def get_acc(self, x0_test, x1_test, x2_test, x3_test, y_test):
