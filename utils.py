@@ -89,6 +89,9 @@ def load_model(model_name, cache_dir=None, parallelize=False, device="cuda"):
             else:
                 model = AutoModelForCausalLM.from_pretrained(full_model_name, cache_dir=cache_dir)
             model_type = "decoder"
+
+    for p in model.parameters():
+        p.requires_grad = False
     
     print(f"Model type: {model_type}")
     
