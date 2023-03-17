@@ -89,7 +89,7 @@ class CCS(object):
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
         informative_loss = ((-(p0*torch.log(p0) + p1*torch.log(p1) + p2*torch.log(p2) + p3*torch.log(p3)))**2).mean(0)
-        if type(informative_loss) == None:
+        if informative_loss == None:
             print(f"informative_loss: {informative_loss}")
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
