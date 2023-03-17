@@ -87,8 +87,8 @@ class CCS(object):
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))) + torch.min(p0, torch.min(p1, torch.min(p2, p3))))**2).mean(0)
         # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
-        informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
-        # informative_loss = ((-(p0*torch.log(p0) + p1*torch.log(p1) + p2*torch.log(p2) + p3*torch.log(p3)))**2).mean(0)
+        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
+        informative_loss = ((-(p0*torch.log(p0) + p1*torch.log(p1) + p2*torch.log(p2) + p3*torch.log(p3)))**2).mean(0)
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
@@ -177,5 +177,8 @@ class CCS(object):
             if loss < best_loss:
                 self.best_probe = copy.deepcopy(self.probe)
                 best_loss = loss
+
+        print(f"self.best_probe: {self.best_probe}")
+        print(f"self.probe: {self.probe}")
 
         return best_loss
