@@ -41,6 +41,7 @@ def main(args, generation_args):
 
     # TODO OH: make consistent choices, e.g. "choice A"
 
+    print(f"args.skip_lr: {args.skip_lr}")
     if not args.skip_lr:
         print("Starting logistic regression...")
         # TODO: validate concatenation works better than subtraction
