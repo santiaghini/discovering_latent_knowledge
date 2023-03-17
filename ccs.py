@@ -19,7 +19,7 @@ class MLPProbe(nn.Module):
 
 class CCS(object):
     def __init__(self, x0, x1, x2, x3, nepochs=1000, ntries=10, lr=1e-3, batch_size=-1, 
-                 verbose=False, device="cuda", linear=True, weight_decay=0.01, var_normalize=False):
+                 verbose=False, device="cuda", linear=True, weight_decay=0.01, var_normalize=False, info_loss_weight=1.0, cons_loss_weight=1.0):
         
         # TODO: play with lr and weight_decay
 
@@ -44,6 +44,9 @@ class CCS(object):
         self.linear = linear
         self.probe = self.initialize_probe()
         self.best_probe = copy.deepcopy(self.probe)
+
+        self.info_loss_weight = info_loss_weight
+        self.cons_loss_weight = cons_loss_weight
 
         
     def initialize_probe(self):
@@ -96,7 +99,7 @@ class CCS(object):
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
-        return informative_loss + consistent_loss
+        return self.info_loss_weight*informative_loss + self.cons_loss_weight * consistent_loss
 
 
     def get_acc(self, x0_test, x1_test, x2_test, x3_test, y_test):

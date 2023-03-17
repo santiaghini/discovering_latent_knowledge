@@ -57,7 +57,7 @@ def main(args, generation_args):
     # Set up CCS. Note that you can usually just use the default args by simply doing ccs = CCS(neg_hs, pos_hs, y)
     ccs = CCS(c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train, nepochs=args.nepochs, ntries=args.ntries, lr=args.lr, batch_size=args.ccs_batch_size, 
                     verbose=args.verbose, device=args.ccs_device, linear=args.linear, weight_decay=args.weight_decay, 
-                    var_normalize=args.var_normalize)
+                    var_normalize=args.var_normalize, info_loss_weight=args.info_loss_weight, cons_loss_weight=args.cons_loss_weight)
     
     # train and evaluate CCS
     print("Training...")
@@ -82,5 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--var_normalize", action="store_true")
     parser.add_argument("--skip_lr", action="store_true")
+    parser.add_argument("--info_loss_weight", type=float, default=1.0)
+    parser.add_argument("--cons_loss_weight", type=float, default=1.0)
     args, _ = parser.parse_known_args()
     main(args, generation_args)
