@@ -161,6 +161,7 @@ class CCS(object):
 
                 # get the corresponding loss
                 loss = self.get_loss(p0, p1, p2, p3)
+                print(f"loss in epoch: {loss}")
 
                 # update the parameters
                 optimizer.zero_grad()
