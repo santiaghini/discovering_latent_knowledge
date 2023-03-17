@@ -103,8 +103,9 @@ class CCS(object):
         x1 = torch.tensor(self.normalize(x1_test), dtype=torch.float, requires_grad=False, device=self.device)
         x2 = torch.tensor(self.normalize(x2_test), dtype=torch.float, requires_grad=False, device=self.device)
         x3 = torch.tensor(self.normalize(x3_test), dtype=torch.float, requires_grad=False, device=self.device)
-        with torch.no_grad():
-            p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
+        # with torch.no_grad():
+        p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
+        
         # TODO: check what confidence we want here
         # avg_confidence = 0.5*(p0 + (1-p1)) # original
         # avg_confidence = 0.25*(p0 + p1 + (1 - p2 - p3))
