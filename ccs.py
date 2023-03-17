@@ -48,7 +48,7 @@ class CCS(object):
         
     def initialize_probe(self):
         if self.linear:
-            self.probe = nn.Sequential(nn.Linear(self.d, 1), nn.Sigmoid()) # TODO: do we change Sigmoid to Softmax?
+            self.probe = nn.Sequential(nn.Linear(self.d, 1), nn.Sigmoid())
         else:
             self.probe = MLPProbe(self.d)
         self.probe.to(self.device)    
@@ -92,7 +92,7 @@ class CCS(object):
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
         # TODO: play with weighting if it doesnt work. Try a grid
         # downweighting consistency loss, not too much, or upweighting
-        return informative_loss + consistent_loss
+        return informative_loss + 0.5*consistent_loss
 
 
     def get_acc(self, x0_test, x1_test, x2_test, x3_test, y_test):
