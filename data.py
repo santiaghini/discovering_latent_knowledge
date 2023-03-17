@@ -82,6 +82,7 @@ class ContrastDataset(Dataset):
         
         # TODO: verify this operation is correct
         # tokenize the question and answer (depending upon the model type and whether self.use_decoder is True)
+        answer = self.create_answer_hint(answer)
         if self.model_type == "encoder_decoder":
             input_ids = self.get_encoder_decoder_input_ids(question, answer)
         elif self.model_type == "encoder":
@@ -95,6 +96,10 @@ class ContrastDataset(Dataset):
                 input_ids[k] = input_ids[k].squeeze(0)
 
         return input_ids
+    
+
+    def create_answer_hint(self, answer):
+        return '\n The correct answer for the question is option "' + answer + '"'
 
 
     def get_encoder_input_ids(self, question, answer):
@@ -104,7 +109,7 @@ class ContrastDataset(Dataset):
         # TODO: check if what's question / answer for amazon dataset: is answer the full answer or just the idx too?
         # for race dataset answer = idx of answer (e.g. "0")
         # combined_input = question + " " + answer
-        combined_input = question + '\n The correct answer for the question is option "' + answer + '"'
+        combined_input = question + answer
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
         return input_ids
@@ -115,7 +120,7 @@ class ContrastDataset(Dataset):
         Format the input ids for encoder-only models.
         This is the same as get_encoder_input_ids except that we add the EOS token at the end of the input (which apparently can matter)
         """
-        combined_input = question + " " + answer + self.tokenizer.eos_token
+        combined_input = question + answer + self.tokenizer.eos_token
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
         return input_ids
