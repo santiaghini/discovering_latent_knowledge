@@ -103,8 +103,11 @@ class CCS(object):
         x1 = torch.tensor(self.normalize(x1_test), dtype=torch.float, requires_grad=False, device=self.device)
         x2 = torch.tensor(self.normalize(x2_test), dtype=torch.float, requires_grad=False, device=self.device)
         x3 = torch.tensor(self.normalize(x3_test), dtype=torch.float, requires_grad=False, device=self.device)
-        # with torch.no_grad():
-        p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
+
+        print(f"self.best_probe at acc: {self.best_probe}")
+
+        with torch.no_grad():
+            p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
         
         # TODO: check what confidence we want here
         # avg_confidence = 0.5*(p0 + (1-p1)) # original
@@ -171,7 +174,6 @@ class CCS(object):
         for train_num in range(self.ntries):
             self.initialize_probe()
             loss = self.train()
-            print(f"Probe for iter {train_num}: {self.probe}")
             if loss < best_loss:
                 self.best_probe = copy.deepcopy(self.probe)
                 best_loss = loss
