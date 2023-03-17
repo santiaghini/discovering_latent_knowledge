@@ -41,7 +41,7 @@ def main(args, generation_args):
 
     # TODO OH: make consistent choices, e.g. "choice A"
 
-    print("Starting logistic regression with L2...")
+    print("Starting logistic regression...")
     # TODO: validate concatenation works better than subtraction
     x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
     x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
