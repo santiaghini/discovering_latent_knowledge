@@ -23,13 +23,6 @@ def main(args, generation_args):
         c3_hs = c3_hs.squeeze(1)
 
     # Very simple train/test split (using the fact that the data is already shuffled)
-    # TODO OH: data issues, make sure distilbert does well in general
-    # make sure your model
-    # c0_hs_train, c0_hs_test = c0_hs[:len(c0_hs) // 2], c0_hs[:len(c0_hs) // 2]
-    # c1_hs_train, c1_hs_test = c1_hs[:len(c1_hs) // 2], c1_hs[len(c1_hs) // 2:]
-    # c2_hs_train, c2_hs_test = c2_hs[:len(c2_hs) // 2], c2_hs[len(c2_hs) // 2:]
-    # c3_hs_train, c3_hs_test = c3_hs[:len(c3_hs) // 2], c3_hs[len(c3_hs) // 2:]
-    # TODO: maybe do 80/20
     c0_hs_train, c0_hs_test = c0_hs[:len(c0_hs) // 4*3], c0_hs[len(c0_hs) // 4*3:]
     c1_hs_train, c1_hs_test = c1_hs[:len(c1_hs) // 4*3], c1_hs[len(c1_hs) // 4*3:]
     c2_hs_train, c2_hs_test = c2_hs[:len(c2_hs) // 4*3], c2_hs[len(c2_hs) // 4*3:]
@@ -39,16 +32,10 @@ def main(args, generation_args):
     # Make sure logistic regression accuracy is reasonable; otherwise our method won't have much of a chance of working
     # you can also concatenate, but this works fine and is more comparable to CCS inputs
 
-    # TODO OH: make consistent choices, e.g. "choice A"
-
     if not args.skip_lr:
         print("Starting logistic regression...")
-        # TODO: validate concatenation works better than subtraction
         x_train = np.concatenate((c0_hs_train, c1_hs_train, c2_hs_train, c3_hs_train), axis=1)
         x_test = np.concatenate((c0_hs_test, c1_hs_test, c2_hs_test, c3_hs_test), axis=1)
-        # x_train = c0_hs_train - c1_hs_train - c2_hs_train - c3_hs_train 
-        # x_test = c0_hs_test - c1_hs_train - c2_hs_test - c3_hs_test
-        # TODO OH: add regularization with LR, less overfit
         lr = LogisticRegression(class_weight="balanced", multi_class="multinomial", max_iter=args.lr_max_iter, penalty='l2', C=1.0)
         lr.fit(x_train, y_train)
         print("Logistic regression train accuracy: {}".format(lr.score(x_train, y_train)))

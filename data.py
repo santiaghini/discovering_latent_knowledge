@@ -6,9 +6,6 @@ from torch.utils.data import Dataset, DataLoader
 from promptsource.templates import DatasetTemplates
 from datasets import load_dataset
 
-# Test SWAG
-# TODO OH: choose the right dataset and model, making sure it performs well
-#   bert (encoder) is not great for this. maybe use gpt-2 instead, decoder only models
 datasets = {
     "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answerKey", "labels_set": [], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3, "1": 0, "2": 1, "3": 2, "4": 3}},
     "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3}},
@@ -46,22 +43,7 @@ class ContrastDataset(Dataset):
             assert self.model_type != "encoder"
 
         # prompt
-        # prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
-        # TODO: can experiment with changing the prompts used in the dataset
         self.prompt = all_prompts[prompt_name]
-
-        # self.labels_map = None
-        # labels_set = datasets[self.dataset_name]["labels_set"]
-        # if type(labels_set.get(0)) != int:
-        #     self.labels_map = {}
-        #     for i, label in enumerate(labels_set):
-        #         self.labels_map[label] = i
-
-        # self.labels_set = set()
-        # for ex in self.raw_dataset:
-        #     self.labels_set.add(ex["label"])
-        #     if len(self.labels_set) == 4:
-        #         break
 
     def __len__(self):
         return len(self.raw_dataset)
@@ -80,7 +62,6 @@ class ContrastDataset(Dataset):
         # get question and answer from prompt
         question, answer = nl_prompt
         
-        # TODO: verify this operation is correct
         # tokenize the question and answer (depending upon the model type and whether self.use_decoder is True)
         answer = self.create_answer_hint(answer)
         if self.model_type == "encoder_decoder":
@@ -106,9 +87,6 @@ class ContrastDataset(Dataset):
         """
         Format the input ids for encoder-only models; standard formatting.
         """
-        # TODO: check if what's question / answer for amazon dataset: is answer the full answer or just the idx too?
-        # for race dataset answer = idx of answer (e.g. "0")
-        # combined_input = question + " " + answer
         combined_input = question + answer
         input_ids = self.tokenizer(combined_input, truncation=True, padding="max_length", return_tensors="pt")
 
@@ -152,12 +130,7 @@ class ContrastDataset(Dataset):
         # get the original example
         data = self.raw_dataset[int(index)]
 
-        # get the possible labels
-        # label_list = [x for x in [data['answer0'], data['answer1'], data['answer2'], data['answer3']] if x != '']
-        # label_list = self.prompt.get_answer_choices_list(data)
-        # assert len(label_list) == 4, print("Make sure there are exacly four possible answers! Actual number of answers:", label_list)
-
-        # want true_answer to be the index as int, this will be
+        # want true_answer to be the index as int
         label_key = datasets[self.dataset_name]["label_key"]
         true_answer = data[label_key]
         labels_map = datasets[self.dataset_name]["labels_map"]
@@ -177,8 +150,6 @@ class ContrastDataset(Dataset):
         c2_example[label_key] = labels_set[2]
         c3_example = data.copy()
         c3_example[label_key] = labels_set[3]
-
-        # TODO: Change prompt to append answer at the end after a question "choice 1/2"
 
         # construct contrast pairs by answering the prompt with the two different possible labels
         # (for example, label 0 might be mapped to "no" and label 1 might be mapped to "yes")

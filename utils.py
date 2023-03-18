@@ -13,8 +13,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ############# Model loading and result saving #############
 
 # Map each model name to its full Huggingface name; this is just for convenience for common models. You can run whatever model you'd like.
-# TODO: Test with two or three, unifiedQA (best model from zero-shot)
-# TODO: Three datasets
 model_mapping = {
     "gpt-j": "EleutherAI/gpt-j-6B",
     "T0pp": "bigscience/T0pp",

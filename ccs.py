@@ -84,21 +84,12 @@ class CCS(object):
         """
         Returns the CCS loss for two probabilities each of shape (n,1) or (n,)
         """
-        # TODO: verify loss functions:
-        # the lower the more confident
-        # TODO OH: Entropy of outputs, minimize entropy
-        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
-        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))) + torch.min(p0, torch.min(p1, torch.min(p2, p3))))**2).mean(0)
-        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
-        # informative_loss = ((1 - torch.max(p0, torch.max(p1, torch.max(p2, p3))))**2).mean(0)
         ep = 1e-12
         informative_loss = ((-(p0*torch.log(p0+ep) + p1*torch.log(p1+ep) + p2*torch.log(p2+ep) + p3*torch.log(p3+ep)))**2).mean(0)
         if torch.isnan(informative_loss).any():
             raise Exception(f"Informative loss is nan: {informative_loss}. p0: {p0}, p1: {p1}, p2: {p2}, p3: {p3}")
 
         consistent_loss = (((p0 + p1 + p2 + p3) - 1)**2).mean(0)
-        # TODO: play with weighting if it doesnt work. Try a grid
-        # downweighting consistency loss, not too much, or upweighting
         return self.info_loss_weight*informative_loss + self.cons_loss_weight * consistent_loss
 
 
@@ -113,17 +104,6 @@ class CCS(object):
 
         with torch.no_grad():
             p0, p1, p2, p3 = self.best_probe(x0), self.best_probe(x1), self.best_probe(x2), self.best_probe(x3)
-        
-        # TODO: check what confidence we want here
-        # avg_confidence = 0.5*(p0 + (1-p1)) # original
-        # avg_confidence = 0.25*(p0 + p1 + (1 - p2 - p3))
-        # avg_confidence = 0.5*(p0 + (1 - p1 - p2 - p3))
-        # predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
-        # p0c = 0.25*(p0 + (1 - p0 - p2 - p3) + (1 - p0 - p1 - p3) + (1 - p0 - p1 - p2))
-        # p1c = 0.25*(p1 + (1 - p1 - p2 - p3) + (1 - p0 - p1 - p3) + (1 - p0 - p1 - p2))
-        # p2c = 0.25*(p2 + (1 - p1 - p2 - p3) + (1 - p0 - p2 - p3) + (1 - p0 - p1 - p2))
-        # p3c = 0.25*(p3 + (1 - p1 - p2 - p3) + (1 - p0 - p2 - p3) + (1 - p0 - p1 - p3))
-        # p0f, p1f, p2f, p3f = [pi.detach().cpu().numpy()[:, 0] for pi in [p0c, p1c, p2c, p3c]]
 
         p0f, p1f, p2f, p3f = [pi.detach().cpu().numpy()[:, 0] for pi in [p0, p1, p2, p3]]
 
@@ -134,7 +114,6 @@ class CCS(object):
         predictions[np.logical_and.reduce((p3f > p0f, p3f > p1f, p3f > p2f))] = 3
 
         acc = (predictions == y_test).mean()
-        # acc = max(acc, 1 - acc)
 
         return acc
     
