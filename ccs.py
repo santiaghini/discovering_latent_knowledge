@@ -179,6 +179,7 @@ class CCS(object):
         for train_num in range(self.ntries):
             self.initialize_probe()
             loss = self.train()
+            print(f"iter: {train_num}, {loss}")
             if loss < best_loss:
                 self.best_probe = copy.deepcopy(self.probe)
                 best_loss = loss
