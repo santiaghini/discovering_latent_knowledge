@@ -36,7 +36,7 @@ def main(args, generation_args):
         if not args.skip_lr:
             x_train = correct_hs_train - incorrect_hs_train  
             x_test = correct_hs_test - incorrect_hs_test
-            lr = LogisticRegression(class_weight="balanced")
+            lr = LogisticRegression(class_weight="balanced", max_iter=args.lr_iter)
             lr.fit(x_train, y_train)
             print("\tLogistic regression accuracy: {}".format(lr.score(x_test, y_test)))
 
@@ -79,5 +79,6 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--var_normalize", action="store_true")
     parser.add_argument("--skip_lr", action="store_true")
+    parser.add_argument("--lr_iter", type=int, default=1000)
     args, _ = parser.parse_known_args()
     main(args, generation_args)
