@@ -62,7 +62,7 @@ def main(args, generation_args):
     # use the argmax function to find the index of the tensor with the largest value at each position
     predictions = stacked.argmax(dim=0)
     acc = (predictions[:, 0].cpu() == torch.tensor(y_test)).float().mean()
-    print(f"Final multi-CCS accuracy: {acc:.2f}")
+    print(f"Final multi-CCS accuracy: {acc:.4f}")
 
 
 if __name__ == "__main__":
