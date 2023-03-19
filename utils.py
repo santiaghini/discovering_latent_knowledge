@@ -2,10 +2,12 @@ import os
 import argparse
 
 import numpy as np
+import torch
 
 # make sure to install promptsource, transformers, and datasets!
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForMaskedLM, AutoModelForCausalLM
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 ############# Model loading and result saving #############
 
@@ -18,6 +20,16 @@ model_mapping = {
     "deberta-mnli": "microsoft/deberta-xxlarge-v2-mnli",
     "deberta": "microsoft/deberta-xxlarge-v2",
     "roberta-mnli": "roberta-large-mnli",
+    "distilbert": "distilbert-base-uncased",
+    "distilbert-race": "gsgoncalves/distilbert-base-uncased-race",
+    "gpt2": "gpt2",
+    "gpt2-l": "gpt2-large",
+    "unifiedqa-t5-sm": "allenai/unifiedqa-t5-small",
+    "unifiedqa-v2-sm": "allenai/unifiedqa-v2-t5-small-1363200",
+    "roberta-race": "LIAMF-USP/roberta-large-finetuned-race", # 85%
+    "bert-swag": "aaraki/bert-base-uncased-finetuned-swag", # 80%
+    "t5-cosmos": "mamlong34/t5_small_cosmos_qa", # 60%
+    "roberta-xlm": "xlm-roberta-base"
 }
 
 
@@ -33,8 +45,8 @@ def get_parser():
     parser.add_argument("--parallelize", action="store_true", help="Whether to parallelize the model")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use for the model")
     # setting up data
-    parser.add_argument("--dataset_name", type=str, default="imdb", help="Name of the dataset to use")
-    parser.add_argument("--split", type=str, default="test", help="Which split of the dataset to use")
+    parser.add_argument("--dataset_name", type=str, default="cosmos_qa", help="Name of the dataset to use")
+    parser.add_argument("--split", type=str, default="train", help="Which split of the dataset to use")
     parser.add_argument("--prompt_idx", type=int, default=0, help="Which prompt to use")
     parser.add_argument("--batch_size", type=int, default=1, help="Batch size to use")
     parser.add_argument("--num_examples", type=int, default=1000, help="Number of examples to generate")
@@ -117,10 +129,14 @@ def load_single_generation(args, generation_type="hidden_states"):
     return np.load(os.path.join(args.save_dir, filename))
 
 
-def load_all_generations(args):
+def load_all_generations(args, n=4):
     # load all the saved generations: neg_hs, pos_hs, and labels
-    neg_hs = load_single_generation(args, generation_type="negative_hidden_states")
-    pos_hs = load_single_generation(args, generation_type="positive_hidden_states")
+    all_choices_hs = []
+    for i in range(n):
+        correct_hs = load_single_generation(args, generation_type=f"c{i}_correct_hs")
+        incorrect_hs = load_single_generation(args, generation_type=f"c{i}_incorrect_hs")
+        all_choices_hs.append([correct_hs, incorrect_hs])
+
     labels = load_single_generation(args, generation_type="labels")
 
-    return neg_hs, pos_hs, labels
+    return all_choices_hs, labels

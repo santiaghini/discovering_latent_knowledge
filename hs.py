@@ -75,27 +75,33 @@ def get_all_hidden_states(model, dataloader, layer=None, all_layers=True, token_
     The dataloader should correspond to examples *with a candidate label already added* to each example.
     E.g. this function should be used for "Q: Is 2+2=5? A: True" or "Q: Is 2+2=5? A: False", but NOT for "Q: Is 2+2=5? A: ".
     """
-    all_pos_hs, all_neg_hs = [], []
+    
+    # for each choice: one list for correct_hs and one for incorrect_hs
+    all_choices_hs = [[[], []], [[], []], [[], []], [[], []]]
     all_gt_labels = []
 
     model.eval()
     for batch in tqdm(dataloader):
-        neg_ids, pos_ids, _, _, gt_label = batch
+        choice_objects, gt_label = batch
+        for i, choice_obj in enumerate(choice_objects):
+            encoded_ids = choice_obj["encoded_ids"]
 
-        neg_hs = get_individual_hidden_states(model, neg_ids, layer=layer, all_layers=all_layers, token_idx=token_idx, 
-                                              model_type=model_type, use_decoder=use_decoder)
-        pos_hs = get_individual_hidden_states(model, pos_ids, layer=layer, all_layers=all_layers, token_idx=token_idx, 
-                                              model_type=model_type, use_decoder=use_decoder)
+            correct_hs = get_individual_hidden_states(model, encoded_ids[0], layer=layer, all_layers=all_layers, token_idx=token_idx, 
+                                                model_type=model_type, use_decoder=use_decoder)
+            incorrect_hs = get_individual_hidden_states(model, encoded_ids[1], layer=layer, all_layers=all_layers, token_idx=token_idx, 
+                                                model_type=model_type, use_decoder=use_decoder)
 
-        if dataloader.batch_size == 1:
-            neg_hs, pos_hs = neg_hs.unsqueeze(0), pos_hs.unsqueeze(0)
+            if dataloader.batch_size == 1:
+                correct_hs, incorrect_hs = correct_hs.unsqueeze(0), incorrect_hs.unsqueeze(0)
 
-        all_neg_hs.append(neg_hs)
-        all_pos_hs.append(pos_hs)
+            
+            all_choices_hs[i][0].append(correct_hs)
+            all_choices_hs[i][1].append(incorrect_hs)
         all_gt_labels.append(gt_label)
-    
-    all_neg_hs = np.concatenate(all_neg_hs, axis=0)
-    all_pos_hs = np.concatenate(all_pos_hs, axis=0)
+
+    for i in range(len(all_choices_hs)):
+        all_choices_hs[i][0] = np.concatenate(all_choices_hs[i][0], axis=0)
+        all_choices_hs[i][1] = np.concatenate(all_choices_hs[i][1], axis=0)
     all_gt_labels = np.concatenate(all_gt_labels, axis=0)
 
-    return all_neg_hs, all_pos_hs, all_gt_labels
+    return all_choices_hs, all_gt_labels

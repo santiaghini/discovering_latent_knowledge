@@ -40,6 +40,8 @@ class CCS(object):
         self.probe = self.initialize_probe()
         self.best_probe = copy.deepcopy(self.probe)
 
+        self.avg_confidence = None
+
         
     def initialize_probe(self):
         if self.linear:
@@ -83,16 +85,22 @@ class CCS(object):
         """
         Computes accuracy for the current parameters on the given test inputs
         """
-        x0 = torch.tensor(self.normalize(x0_test), dtype=torch.float, requires_grad=False, device=self.device)
-        x1 = torch.tensor(self.normalize(x1_test), dtype=torch.float, requires_grad=False, device=self.device)
-        with torch.no_grad():
-            p0, p1 = self.best_probe(x0), self.best_probe(x1)
-        avg_confidence = 0.5*(p0 + (1-p1))
+        avg_confidence = self.get_confidence(x0_test, x1_test)
         predictions = (avg_confidence.detach().cpu().numpy() < 0.5).astype(int)[:, 0]
         acc = (predictions == y_test).mean()
         acc = max(acc, 1 - acc)
 
         return acc
+    
+    
+    def get_confidence(self, x0, x1):
+        x0 = torch.tensor(self.normalize(x0), dtype=torch.float, requires_grad=False, device=self.device)
+        x1 = torch.tensor(self.normalize(x1), dtype=torch.float, requires_grad=False, device=self.device)
+        with torch.no_grad():
+            p0, p1 = self.best_probe(x0), self.best_probe(x1)
+        avg_confidence = 0.5*(p0 + (1-p1))
+        self.avg_confidence = avg_confidence
+        return avg_confidence
     
         
     def train(self):

@@ -8,6 +8,15 @@ from promptsource.templates import DatasetTemplates
 from datasets import load_dataset
 
 ############# Data #############
+
+datasets = {
+    "ai2_arc" : {"subset_name": "ARC-Easy", "prompt_name": "pick_the_most_correct_option", "label_key": "answerKey", "labels_set": [], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3, "1": 0, "2": 1, "3": 2, "4": 3}},
+    "race": {"subset_name": "all", "prompt_name": "Select the best answer", "label_key": "answer", "labels_set": ["A", "B", "C", "D"], "labels_map": {"A": 0, "B": 1, "C": 2, "D": 3}},
+    "swag": {"subset_name": "regular", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None},
+    "hellaswag": {"subset_name": "", "prompt_name": "how_ends", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None},
+    "cosmos_qa": {"subset_name": "", "prompt_name": "description_context_question_answer_id", "label_key": "label", "labels_set": [0, 1, 2, 3], "labels_map": None}
+}
+
 class ContrastDataset(Dataset):
     """
     Given a dataset and tokenizer (from huggingface), along with a collection of prompts for that dataset from promptsource and a corresponding prompt index, 
@@ -15,11 +24,15 @@ class ContrastDataset(Dataset):
     
     Truncates examples larger than max_len, which can mess up contrast pairs, so make sure to only give it examples that won't be truncated.
     """
-    def __init__(self, raw_dataset, tokenizer, all_prompts, prompt_idx, 
+    def __init__(self, raw_dataset, tokenizer, all_prompts, dataset_name, prompt_idx, prompt_name,
                  model_type="encoder_decoder", use_decoder=False, device="cuda"):
 
         # data and tokenizer
         self.raw_dataset = raw_dataset
+        self.dataset_name = dataset_name
+        self.all_prompts = all_prompts
+        self.prompt_idx = prompt_idx
+        self.prompt_name = prompt_name
         self.tokenizer = tokenizer
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -32,8 +45,7 @@ class ContrastDataset(Dataset):
             assert self.model_type != "encoder"
 
         # prompt
-        prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
-        self.prompt = all_prompts[prompt_name_list[prompt_idx]]
+        self.prompt = all_prompts[prompt_name]
 
     def __len__(self):
         return len(self.raw_dataset)
@@ -66,6 +78,13 @@ class ContrastDataset(Dataset):
                 input_ids[k] = input_ids[k].squeeze(0)
 
         return input_ids
+
+
+    def create_answer_hint(self, answer, correct):
+        if correct:
+            return f'\nOption "{answer}" is the correct answer'
+        else:
+            return f'\nOption "{answer}" is not the correct answer'
 
 
     def get_encoder_input_ids(self, question, answer):
@@ -114,32 +133,40 @@ class ContrastDataset(Dataset):
     def __getitem__(self, index):
         # get the original example
         data = self.raw_dataset[int(index)]
-        text, true_answer = data["text"], data["label"]
 
-        # get the possible labels
-        # (for simplicity assume the binary case for contrast pairs)
-        label_list = self.prompt.get_answer_choices_list(data)
-        assert len(label_list) == 2, print("Make sure there are only two possible answers! Actual number of answers:", label_list)
+        # want true_answer to be the index as int
+        label_key = datasets[self.dataset_name]["label_key"]
+        true_answer = data[label_key]
+        labels_map = datasets[self.dataset_name]["labels_map"]
+        if labels_map:
+            true_answer = labels_map[true_answer]
+
+        labels_set = datasets[self.dataset_name]["labels_set"]
+        if self.dataset_name == "ai2_arc":
+            labels_set = data["choices"]["label"]
 
         # reconvert to dataset format but with fake/candidate labels to create the contrast pair
-        neg_example = {"text": text, "label": 0}
-        pos_example = {"text": text, "label": 1}
+        choice_objects = []
+        for i in range(4):
+            ex = data.copy()
+            ex[label_key] = labels_set[i]
+            question, answer = self.prompt.apply(ex)
 
-        # construct contrast pairs by answering the prompt with the two different possible labels
-        # (for example, label 0 might be mapped to "no" and label 1 might be mapped to "yes")
-        neg_prompt, pos_prompt = self.prompt.apply(neg_example), self.prompt.apply(pos_example)
+            correct_prompt = (question, self.create_answer_hint(answer, True))
+            incorrect_prompt = (question, self.create_answer_hint(answer, False))
+            
+            choice_objects.append({"prompts": [correct_prompt, incorrect_prompt], "encoded_ids": [self.encode(correct_prompt), self.encode(incorrect_prompt)]})
 
-        # tokenize
-        neg_ids, pos_ids = self.encode(neg_prompt), self.encode(pos_prompt)
 
         # verify these are different (e.g. tokenization didn't cut off the difference between them)
+        enc_0 = choice_objects[0]["encoded_ids"]
         if self.use_decoder and self.model_type == "encoder_decoder":
-            assert (neg_ids["decoder_input_ids"] - pos_ids["decoder_input_ids"]).sum() != 0, print("The decoder_input_ids for the contrast pairs are the same!", neg_ids, pos_ids)
+            assert (enc_0[0]["decoder_input_ids"] - enc_0[1]["decoder_input_ids"]).sum() != 0, print("The decoder_input_ids for the contrast pairs are the same!")
         else:
-            assert (neg_ids["input_ids"] - pos_ids["input_ids"]).sum() != 0, print("The input_ids for the contrast pairs are the same!", neg_ids, pos_ids)
+            assert (enc_0[0]["input_ids"] - enc_0[1]["input_ids"]).sum() != 0, print("The input_ids for the contrast pairs are the same!")
 
         # return the tokenized inputs, the text prompts, and the true label
-        return neg_ids, pos_ids, neg_prompt, pos_prompt, true_answer
+        return choice_objects, true_answer
 
     
 def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, num_examples=1000,
@@ -150,20 +177,25 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
     Takes a random subset of (at most) num_examples samples from the dataset that are not truncated by the tokenizer.
     """
     # load the raw dataset
-    raw_dataset = load_dataset(dataset_name)[split]
+    subset_name = datasets[dataset_name]["subset_name"]
+    if subset_name:
+        raw_dataset = load_dataset(dataset_name, name=subset_name)[split]    
+    else:
+        raw_dataset = load_dataset(dataset_name)[split]
 
     # load all the prompts for that dataset
-    all_prompts = DatasetTemplates(dataset_name)
+    all_prompts = DatasetTemplates(dataset_name, subset_name)
+
+    prompt_name = datasets[dataset_name]["prompt_name"]
 
     # create the ConstrastDataset
-    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, prompt_idx, 
-                                       model_type=model_type, use_decoder=use_decoder, 
-                                       device=device)
+    contrast_dataset = ContrastDataset(raw_dataset, tokenizer, all_prompts, dataset_name, prompt_idx, prompt_name,
+                                       model_type=model_type, use_decoder=use_decoder, device=device)
 
     # get a random permutation of the indices; we'll take the first num_examples of these that do not get truncated
     random_idxs = np.random.permutation(len(contrast_dataset))
 
-    # remove examples that would be truncated (since this messes up contrast pairs)
+    # remove examples that would be truncated (since this messes up contrast pairs) AND that have at most 4 choices
     prompt_name_list = list(all_prompts.name_to_id_mapping.keys())
     prompt = all_prompts[prompt_name_list[prompt_idx]]
     keep_idxs = []
@@ -171,6 +203,8 @@ def get_dataloader(dataset_name, split, tokenizer, prompt_idx, batch_size=16, nu
         question, answer = prompt.apply(raw_dataset[int(idx)])
         input_text = question + " " + answer
         if len(tokenizer.encode(input_text, truncation=False)) < tokenizer.model_max_length - 2:  # include small margin to be conservative
+            if dataset_name == "ai2_arc" and len(raw_dataset[int(idx)]["choices"]["label"]) != 4:
+                continue
             keep_idxs.append(idx)
             if len(keep_idxs) >= num_examples:
                 break
