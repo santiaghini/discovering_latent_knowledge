@@ -9,7 +9,7 @@ def main(args, generation_args):
     # Load hidden states and labels
     all_choices_hs, y = load_all_generations(generation_args)
 
-    all_ccs = []
+    all_confidences = []
     # Run per each choice
     for i in range(len(all_choices_hs)):
         print(f"Choice {i} of {len(all_choices_hs)}:")
@@ -51,12 +51,11 @@ def main(args, generation_args):
         ccs_acc = ccs.get_acc(correct_hs_test, incorrect_hs_test, y_test)
         print(f"\tCCS accuracy for choice {i}: {ccs_acc}")
 
-        all_ccs.append(ccs)
+        all_confidences.append(ccs.avg_confidence)
     
     # Integrating learned probes
     print("Now integrating and running altogether:")
     y_train, y_test = y[:len(y) // 4*3], y[len(y) // 4*3:]
-    all_confidences = [ccs.avg_confidence for ccs in all_ccs]
     # stack the tensors into a new tensor
     stacked = torch.stack(all_confidences)
     # use the argmax function to find the index of the tensor with the largest value at each position
