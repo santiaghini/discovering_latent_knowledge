@@ -12,7 +12,7 @@ def main(args, generation_args):
     all_confidences = []
     # Run per each choice
     for i in range(len(all_choices_hs)):
-        print(f"Choice {i} of {len(all_choices_hs)}:")
+        print(f"Choice {i+1} of {len(all_choices_hs)}:")
         correct_hs, incorrect_hs = all_choices_hs[i]
 
         # Make sure the shape is correct
