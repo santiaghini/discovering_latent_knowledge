@@ -54,7 +54,7 @@ def main(args, generation_args):
         all_ccs.append(ccs)
     
     # Integrating learned probes
-    print("Now integrating and running altogether")
+    print("Now integrating and running altogether:")
     y_train, y_test = y[:len(y) // 4*3], y[len(y) // 4*3:]
     all_confidences = [ccs.avg_confidence for ccs in all_ccs]
     # stack the tensors into a new tensor
